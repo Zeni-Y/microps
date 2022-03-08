@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "exception": "c",
+        "new": "c",
+        "tuple": "c",
+        "queue": "c"
+    }
+}

@@ -1,0 +1,234 @@
+[33mcommit c1f511ea05620172529b779b6cafdce38d286c40[m
+Author: YAMAMOTO Masaya <pandax381@gmail.com>
+Date:   Sat Feb 26 07:52:14 2022 +0900
+
+    step12
+
+[1mdiff --git a/driver/ether_tap.h b/driver/ether_tap.h[m
+[1mnew file mode 100644[m
+[1mindex 0000000..8f09258[m
+[1m--- /dev/null[m
+[1m+++ b/driver/ether_tap.h[m
+[36m@@ -0,0 +1,9 @@[m
+[32m+[m[32m#ifndef ETHER_TAP_H[m
+[32m+[m[32m#define ETHER_TAP_H[m
+[32m+[m
+[32m+[m[32m#include "net.h"[m
+[32m+[m
+[32m+[m[32mextern struct net_device *[m
+[32m+[m[32mether_tap_init(const char *name, const char *addr);[m
+[32m+[m
+[32m+[m[32m#endif[m
+[1mdiff --git a/ether.c b/ether.c[m
+[1mnew file mode 100644[m
+[1mindex 0000000..a9c1a00[m
+[1m--- /dev/null[m
+[1m+++ b/ether.c[m
+[36m@@ -0,0 +1,73 @@[m
+[32m+[m[32m#include <stdio.h>[m
+[32m+[m[32m#include <stddef.h>[m
+[32m+[m[32m#include <stdint.h>[m
+[32m+[m[32m#include <stdlib.h>[m
+[32m+[m[32m#include <string.h>[m
+[32m+[m[32m#include <sys/types.h>[m
+[32m+[m
+[32m+[m[32m#include "util.h"[m
+[32m+[m[32m#include "net.h"[m
+[32m+[m[32m#include "ether.h"[m
+[32m+[m
+[32m+[m[32mstruct ether_hdr {[m
+[32m+[m[32m    uint8_t dst[ETHER_ADDR_LEN];[m
+[32m+[m[32m    uint8_t src[ETHER_ADDR_LEN];[m
+[32m+[m[32m    uint16_t type;[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mconst uint8_t ETHER_ADDR_ANY[ETHER_ADDR_LEN] = {"\x00\x00\x00\x00\x00\x00"};[m
+[32m+[m[32mconst uint8_t ETHER_ADDR_BROADCAST[ETHER_ADDR_LEN] = {"\xff\xff\xff\xff\xff\xff"};[m
+[32m+[m
+[32m+[m[32mint[m
+[32m+[m[32mether_addr_pton(const char *p, uint8_t *n)[m
+[32m+[m[32m{[m
+[32m+[m[32m    int index;[m
+[32m+[m[32m    char *ep;[m
+[32m+[m[32m    long val;[m
+[32m+[m
+[32m+[m[32m    if (!p || !n) {[m
+[32m+[m[32m        return -1;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    for (index = 0; index < ETHER_ADDR_LEN; index++) {[m
+[32m+[m[32m        val = strtol(p, &ep, 16);[m
+[32m+[m[32m        if (ep == p || val < 0 || val > 0xff || (index < ETHER_ADDR_LEN - 1 && *ep != ':')) {[m
+[32m+[m[32m            break;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        n[index] = (uint8_t)val;[m
+[32m+[m[32m        p = ep + 1;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if (index != ETHER_ADDR_LEN || *ep != '\0') {[m
+[32m+[m[32m        return -1;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    return 0;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mchar *[m
+[32m+[m[32mether_addr_ntop(const uint8_t *n, char *p, size_t size)[m
+[32m+[m[32m{[m
+[32m+[m[32m    if (!n || !p) {[m
+[32m+[m[32m        return NULL;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    snprintf(p, size, "%02x:%02x:%02x:%02x:%02x:%02x", n[0], n[1], n[2], n[3], n[4], n[5]);[m
+[32m+[m[32m    return p;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mstatic void[m
+[32m+[m[32mether_dump(const uint8_t *frame, size_t flen)[m
+[32m+[m[32m{[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mint[m
+[32m+[m[32mether_transmit_helper(struct net_device *dev, uint16_t type, const uint8_t *data, size_t len, const void *dst, ether_transmit_func_t callback)[m
+[32m+[m[32m{[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mint[m
+[32m+[m[32mether_input_helper(struct net_device *dev, ether_input_func_t callback)[m
+[32m+[m[32m{[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mvoid[m
+[32m+[m[32mether_setup_helper(struct net_device *dev)[m
+[32m+[m[32m{[m
+[32m+[m[32m}[m
+[1mdiff --git a/ether.h b/ether.h[m
+[1mnew file mode 100644[m
+[1mindex 0000000..2c41ba7[m
+[1m--- /dev/null[m
+[1m+++ b/ether.h[m
+[36m@@ -0,0 +1,42 @@[m
+[32m+[m[32m#ifndef ETHER_H[m
+[32m+[m[32m#define ETHER_H[m
+[32m+[m
+[32m+[m[32m#include <stdint.h>[m
+[32m+[m[32m#include <stddef.h>[m
+[32m+[m[32m#include <sys/types.h>[m
+[32m+[m
+[32m+[m[32m#include "net.h"[m
+[32m+[m
+[32m+[m[32m#define ETHER_ADDR_LEN 6[m
+[32m+[m[32m#define ETHER_ADDR_STR_LEN 18 /* "xx:xx:xx:xx:xx:xx\0" */[m
+[32m+[m
+[32m+[m[32m#define ETHER_HDR_SIZE 14[m
+[32m+[m[32m#define ETHER_FRAME_SIZE_MIN   60 /* without FCS */[m
+[32m+[m[32m#define ETHER_FRAME_SIZE_MAX 1514 /* without FCS */[m
+[32m+[m[32m#define ETHER_PAYLOAD_SIZE_MIN (ETHER_FRAME_SIZE_MIN - ETHER_HDR_SIZE)[m
+[32m+[m[32m#define ETHER_PAYLOAD_SIZE_MAX (ETHER_FRAME_SIZE_MAX - ETHER_HDR_SIZE)[m
+[32m+[m
+[32m+[m[32m/* see https://www.iana.org/assignments/ieee-802-numbers/ieee-802-numbers.txt */[m
+[32m+[m[32m#define ETHER_TYPE_IP   0x0800[m
+[32m+[m[32m#define ETHER_TYPE_ARP  0x0806[m
+[32m+[m[32m#define ETHER_TYPE_IPV6 0x86dd[m
+[32m+[m
+[32m+[m[32mextern const uint8_t ETHER_ADDR_ANY[ETHER_ADDR_LEN];[m
+[32m+[m[32mextern const uint8_t ETHER_ADDR_BROADCAST[ETHER_ADDR_LEN];[m
+[32m+[m
+[32m+[m[32mextern int[m
+[32m+[m[32mether_addr_pton(const char *p, uint8_t *n);[m
+[32m+[m[32mextern char *[m
+[32m+[m[32mether_addr_ntop(const uint8_t *n, char *p, size_t size);[m
+[32m+[m
+[32m+[m[32mtypedef ssize_t (*ether_transmit_func_t)(struct net_device *dev, const uint8_t *data, size_t len);[m
+[32m+[m[32mtypedef ssize_t (*ether_input_func_t)(struct net_device *dev, uint8_t *buf, size_t size);[m
+[32m+[m
+[32m+[m[32mextern int[m
+[32m+[m[32mether_transmit_helper(struct net_device *dev, uint16_t type, const uint8_t *payload, size_t plen, const void *dst, ether_transmit_func_t callback);[m
+[32m+[m[32mextern int[m
+[32m+[m[32mether_input_helper(struct net_device *dev, ether_input_func_t callback);[m
+[32m+[m[32mextern void[m
+[32m+[m[32mether_setup_helper(struct net_device *dev);[m
+[32m+[m
+[32m+[m[32m#endif[m
+[1mdiff --git a/platform/linux/driver/ether_tap.c b/platform/linux/driver/ether_tap.c[m
+[1mnew file mode 100644[m
+[1mindex 0000000..057e7c1[m
+[1m--- /dev/null[m
+[1m+++ b/platform/linux/driver/ether_tap.c[m
+[36m@@ -0,0 +1,80 @@[m
+[32m+[m[32m#define _GNU_SOURCE /* for F_SETSIG */[m
+[32m+[m[32m#include <stdio.h>[m
+[32m+[m[32m#include <stdint.h>[m
+[32m+[m[32m#include <stdlib.h>[m
+[32m+[m[32m#include <string.h>[m
+[32m+[m[32m#include <unistd.h>[m
+[32m+[m[32m#include <fcntl.h>[m
+[32m+[m[32m#include <errno.h>[m
+[32m+[m[32m#include <sys/types.h>[m
+[32m+[m[32m#include <sys/socket.h>[m
+[32m+[m[32m#include <sys/ioctl.h>[m
+[32m+[m[32m#include <sys/poll.h>[m
+[32m+[m[32m#include <linux/if.h>[m
+[32m+[m[32m#include <linux/if_tun.h>[m
+[32m+[m
+[32m+[m[32m#include "platform.h"[m
+[32m+[m
+[32m+[m[32m#include "util.h"[m
+[32m+[m[32m#include "net.h"[m
+[32m+[m[32m#include "ether.h"[m
+[32m+[m
+[32m+[m[32m#include "driver/ether_tap.h"[m
+[32m+[m
+[32m+[m[32m#define CLONE_DEVICE "/dev/net/tun"[m
+[32m+[m
+[32m+[m[32m#define ETHER_TAP_IRQ (INTR_IRQ_BASE+2)[m
+[32m+[m
+[32m+[m[32mstruct ether_tap {[m
+[32m+[m[32m    char name[IFNAMSIZ];[m
+[32m+[m[32m    int fd;[m
+[32m+[m[32m    unsigned int irq;[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32m#define PRIV(x) ((struct ether_tap *)x->priv)[m
+[32m+[m
+[32m+[m[32mstatic int[m
+[32m+[m[32mether_tap_addr(struct net_device *dev)[m
+[32m+[m[32m{[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mstatic int[m
+[32m+[m[32mether_tap_open(struct net_device *dev)[m
+[32m+[m[32m{[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mstatic int[m
+[32m+[m[32mether_tap_close(struct net_device *dev)[m
+[32m+[m[32m{[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mstatic ssize_t[m
+[32m+[m[32mether_tap_write(struct net_device *dev, const uint8_t *frame, size_t flen)[m
+[32m+[m[32m{[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mint[m
+[32m+[m[32mether_tap_transmit(struct net_device *dev, uint16_t type, const uint8_t *buf, size_t len, const void *dst)[m
+[32m+[m[32m{[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mstatic ssize_t[m
+[32m+[m[32mether_tap_read(struct net_device *dev, uint8_t *buf, size_t size)[m
+[32m+[m[32m{[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mstatic int[m
+[32m+[m[32mether_tap_isr(unsigned int irq, void *id)[m
+[32m+[m[32m{[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mstatic struct net_device_ops ether_tap_ops = {[m
+[32m+[m[32m    .open = ether_tap_open,[m
+[32m+[m[32m    .close = ether_tap_close,[m
+[32m+[m[32m    .transmit = ether_tap_transmit,[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mstruct net_device *[m
+[32m+[m[32mether_tap_init(const char *name, const char *addr)[m
+[32m+[m[32m{[m
+[32m+[m[32m}[m
